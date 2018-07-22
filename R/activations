@@ -1,0 +1,94 @@
+
+relu_baseR <- function(mat){
+  if( !is.matrix(mat) ) stop("Input mat must be a matrix.")
+  apply(mat, c(1,2), FUN = function(x){ifelse(x>0,x,0)})
+}
+
+
+softmax_baseR <- function(mat){
+  if( !is.matrix(mat) ) stop("Input mat must be a matrix.")
+  temp <- apply(mat, c(1,2), FUN=exp)
+  temp / matrix(rowSums(temp), byrow=F, ncol=ncol(temp), nrow=nrow(temp))
+}
+
+
+# need to read about implementation of alpha parameter in keras
+elu_baseR <- function(mat, alpha = 1.0){
+  if( !is.matrix(mat) ) stop("Input mat must be a matrix.")
+  if( length(alpha != 1) ){
+    stop(paste("Expected scaler alpha. Recieved length(alpha)=", length(alpha)))
+  }
+  apply(mat, c(1,2), 
+        FUN = function(x){
+          ifelse ( x > 0,
+                   x,
+                   alpha * ( exp(x)-1 )
+          )
+        }
+  )
+}
+
+# need to read about implementation of scale and alpha parameter in keras
+selu_baseR <- function(mat, scale = 1.0, alpha = 1.0) {
+  warning("Activations elu and selu not fully supported yet. Alpha and scale ignored.")
+  if( !is.matrix(mat) ) stop("Input mat must be a matrix.")
+  if ( length(alpha) != 1 ){
+    stop(paste("Expected scaler alpha. Recieved length(alpha)=", length(alpha)))
+  }
+  if ( length(scale) != 1 ){
+    stop(paste("Expected scaler scale. Recieved length(scale)=", length(scale)))
+  }
+  apply(mat, c(1,2), 
+        FUN = function(x){
+          ifelse ( x > 0,
+                   scale * x,
+                   scale * alpha * ( exp(x)-1 )
+          ) 
+        }
+        )
+}
+
+
+softplus_baseR <- function(mat){
+  if( !is.matrix(mat) ) stop("Input mat must be a matrix.")
+  apply(mat, 
+        c(1,2), 
+        FUN = function(x){ log( exp(x) + 1 ) })
+}
+
+
+softsign_baseR <- function(mat){
+  if( !is.matrix(mat) ) stop("Input mat must be a matrix.")
+  apply(mat, 
+        c(1,2), 
+        FUN = function(x){ x / ( abs(x) + 1 ) })
+}
+
+
+tanh_baseR <- function(mat){
+  if( !is.matrix(mat) ) stop("Input mat must be a matrix.")
+  apply(mat, 
+        c(1,2), 
+        FUN = tanh)
+}
+
+
+sigmoid_baseR <- function(mat){
+  if( !is.matrix(mat) ) stop("Input mat must be a matrix.")
+  apply(mat, 
+        c(1,2), 
+        FUN = function(x){ 1 / (1 + exp(0-x)) })
+}
+
+hard_sigmoid_baseR <- function(mat){
+  if( !is.matrix(mat) ) stop("Input mat must be a matrix.")
+  apply(mat,
+        c(1,2),
+        FUN = function(x){
+          if ( x < -2.5 ) 0
+          else if ( x > 2.5 ) 1
+          else 0.5 + ( 0.2 * x )
+        })
+}
+
+
