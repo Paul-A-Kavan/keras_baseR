@@ -1,0 +1,20 @@
+check_layers_baseR <- function(config){
+  supportedLayers <- c("Dense", "Activation" )
+  for ( i in config ) {
+    if ( ! i$class_name %in% supportedLayers){
+      message <- paste("Error:",
+                       i$class_name, "is not yet a supported layer class.",
+                       "Supported layers:", supportedLayers )
+      return(list(T, message))
+    }
+  }
+  return(list(F, NULL))
+}
+
+
+activate_baseR <- function(mat, act_type, ...){
+  supported_activations <- c("relu", "softmax")
+  switch(act_type,
+         relu = relu_baseR(mat),
+         softmax = softmax_baseR(mat))
+}
