@@ -1,0 +1,49 @@
+convert_model_baseR <- function(model){
+  if ( ! "package:keras" %in% search() ) 
+    stop("This function requires keras. Run library(keras) to continue.")
+  tryCatch({
+    config <- model$get_config()
+    check <- check_layers_baseR(config)
+    if( check[[1]] ) 
+      stop(check[[2]])
+    mod <- list()
+    for ( i in config ) {
+      if ( i$class_name == "Activation" ) {
+        mod[[length(mod)+1]] <- list("operation" = "activate", 
+                                     "information" = i$config$activation)
+      } else if ( i$class_name == "Dense" ) {
+        weights <- keras::get_layer(model, i$config$name)$get_weights()[[1]]
+        mod[[length(mod)+1]] <- list("operation"="multiply",
+                                     "information" = weights)
+        if ( i$config$use_bias ){
+          bias <- keras::get_layer(model, i$config$name)$get_weights()[[2]]
+          mod[[length(mod)+1]] <- list("operation" = "add",
+                                       "information" = bias)
+        }
+        if ( i$config$activation != 'linear' ) {
+          mod[[length(mod)+1]] <- list("operation" = "activate", 
+                                       "information" = i$config$activation)
+        }
+      }
+    }
+    return(mod)
+    #saveRDS(mod, file = file)
+  },
+  error = function(error){return(error)})
+}
+
+
+
+
+predict_proba_baseR <- function(mod, mat){
+  for ( i in mod ) {
+    if ( i$operation == 'multiply' ){
+      mat <- mat %*% i$information
+    } else if ( i$operation == 'add' ){
+      mat <- mat + matrix(i$information, byrow=T, ncol=ncol(mat), nrow=nrow(mat))
+    } else if ( i$operation == 'activate' ){
+      mat <- activate_baseR(mat, i$information)
+    }
+  }
+  return(mat)
+}
